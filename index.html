@@ -962,7 +962,7 @@ const QUIZZES = {
 
 // ========== API Call ==========
 async function callAI(messages) {
-  const res = await fetch('/api/chat', {
+  const res = await fetch('https://quiz-api.2445297621.workers.dev', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'

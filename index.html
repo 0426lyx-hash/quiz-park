@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>趣味测试乐园</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0a0a0f;
+  --card: #16161f;
+  --card-hover: #1e1e2a;
+  --border: #2a2a3a;
+  --text: #e8e6e3;
+  --text-dim: #8a8a9a;
+  --accent-purple: #a855f7;
+  --accent-pink: #ec4899;
+  --accent-amber: #f59e0b;
+  --accent-teal: #14b8a6;
+  --accent-blue: #3b82f6;
+  --gradient-1: linear-gradient(135deg, #a855f7, #ec4899);
+  --gradient-2: linear-gradient(135deg, #f59e0b, #ef4444);
+  --gradient-3: linear-gradient(135deg, #14b8a6, #3b82f6);
+}
+
+body {
+  font-family: 'Noto Sans SC', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* === Noise overlay === */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+.container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+  position: relative;
+  z-index: 1;
+}
+
+/* === Header === */
+.header {
+  text-align: center;
+  padding: 40px 0 32px;
+}
+.header h1 {
+  font-size: 28px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #a855f7, #ec4899, #f59e0b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.5px;
+}
+.header p {
+  color: var(--text-dim);
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+/* === User Info Setup === */
+.user-info {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+.user-info label {
+  font-size: 13px;
+  color: var(--text-dim);
+  display: block;
+  margin-bottom: 8px;
+}
+.user-info input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+  margin-bottom: 14px;
+}
+.user-info input:focus { border-color: var(--accent-purple); }
+.user-info .birth-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.user-info .birth-row select {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 8px;
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  appearance: none;
+  -webkit-appearance: none;
+  text-align: center;
+}
+.user-info .birth-row select:focus { border-color: var(--accent-purple); }
+.user-info .start-btn {
+  width: 100%;
+  background: var(--gradient-1);
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+.user-info.hidden { display: none; }
+
+/* === Quiz Cards === */
+.quiz-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.quiz-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+.quiz-card:hover {
+  background: var(--card-hover);
+  transform: translateY(-2px);
+  border-color: #3a3a4a;
+}
+.quiz-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+.quiz-card[data-quiz="personality"]::before { background: var(--gradient-1); }
+.quiz-card[data-quiz="fortune"]::before { background: var(--gradient-2); }
+.quiz-card[data-quiz="brainstorm"]::before { background: var(--gradient-3); }
+
+.quiz-card .emoji {
+  font-size: 32px;
+  margin-bottom: 10px;
+  display: block;
+}
+.quiz-card h3 {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.quiz-card p {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+.quiz-card .tag {
+  display: inline-block;
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-top: 10px;
+  font-weight: 500;
+}
+.quiz-card[data-quiz="personality"] .tag { background: rgba(168,85,247,0.15); color: var(--accent-purple); }
+.quiz-card[data-quiz="fortune"] .tag { background: rgba(245,158,11,0.15); color: var(--accent-amber); }
+.quiz-card[data-quiz="brainstorm"] .tag { background: rgba(20,184,166,0.15); color: var(--accent-teal); }
+
+/* === Quiz Flow === */
+.quiz-flow { display: none; }
+.quiz-flow.active { display: block; }
+.quiz-grid.hidden { display: none; }
+.user-info.hidden { display: none; }
+
+.back-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 8px 0;
+  margin-bottom: 16px;
+  font-family: inherit;
+}
+.back-btn:hover { color: var(--text); }
+
+.quiz-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.quiz-progress {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 24px;
+}
+.progress-bar {
+  height: 3px;
+  background: var(--border);
+  border-radius: 3px;
+  margin-bottom: 28px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+.quiz-card[data-quiz="personality"] ~ .quiz-flow .progress-fill,
+.progress-fill.personality { background: var(--gradient-1); }
+.progress-fill.fortune { background: var(--gradient-2); }
+.progress-fill.brainstorm { background: var(--gradient-3); }
+
+.question-text {
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  min-height: 60px;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.option-btn {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 18px;
+  color: var(--text);
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  line-height: 1.4;
+}
+.option-btn:hover {
+  background: var(--card-hover);
+  border-color: var(--accent-purple);
+}
+.option-btn:active {
+  transform: scale(0.98);
+}
+
+/* === Loading === */
+.loading {
+  text-align: center;
+  padding: 60px 0;
+}
+.loading .spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent-purple);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 20px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading p {
+  color: var(--text-dim);
+  font-size: 14px;
+}
+.loading .loading-sub {
+  font-size: 12px;
+  margin-top: 6px;
+  color: var(--text-dim);
+  opacity: 0.6;
+}
+
+/* === Result === */
+.result-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 28px 24px;
+  text-align: center;
+}
+.result-card .result-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+}
+.result-card .result-title {
+  font-size: 24px;
+  font-weight: 900;
+  margin-bottom: 16px;
+  line-height: 1.3;
+}
+.result-card.personality .result-title { color: var(--accent-purple); }
+.result-card.fortune .result-title { color: var(--accent-amber); }
+.result-card.brainstorm .result-title { color: var(--accent-teal); }
+
+.result-card .result-body {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--text);
+  text-align: left;
+  margin-bottom: 24px;
+  white-space: pre-line;
+}
+
+.result-actions {
+  display: flex;
+  gap: 10px;
+}
+.result-actions button {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  border: none;
+  transition: opacity 0.2s;
+}
+.result-actions button:hover { opacity: 0.85; }
+.btn-retry {
+  background: var(--border);
+  color: var(--text);
+}
+.btn-share {
+  background: var(--gradient-1);
+  color: #fff;
+}
+
+/* === Toast === */
+.toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  color: var(--text);
+  z-index: 100;
+  transition: transform 0.3s ease;
+  pointer-events: none;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* === Error === */
+.error-msg {
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 12px;
+  padding: 14px 18px;
+  color: #f87171;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>✦ 趣味测试乐园 ✦</h1>
+    <p>AI 驱动的个性化趣味测试，每次结果都不一样</p>
+  </div>
+
+  <!-- User Info -->
+  <div class="user-info" id="userInfo">
+    <label>请输入你的信息，开始测试</label>
+    <input type="text" id="userNameInput" placeholder="你的姓名（必填）">
+    <label style="font-size:12px;margin-bottom:6px;">出生日期</label>
+    <div class="birth-row">
+      <select id="birthYear"></select>
+      <select id="birthMonth"></select>
+      <select id="birthDay"></select>
+    </div>
+    <button class="start-btn" onclick="confirmUserInfo()">开始测试</button>
+  </div>
+
+  <!-- Quiz List -->
+  <div class="quiz-grid hidden" id="quizGrid">
+    <div class="quiz-card" data-quiz="personality" onclick="startQuiz('personality')">
+      <span class="emoji">🎭</span>
+      <h3>你的隐藏人格</h3>
+      <p>通过 5 个情境问题，AI 深度解读你不为人知的另一面</p>
+      <span class="tag">5 题 · 约 2 分钟</span>
+    </div>
+    <div class="quiz-card" data-quiz="fortune" onclick="startQuiz('fortune')">
+      <span class="emoji">🔮</span>
+      <h3>今日运势解读</h3>
+      <p>回答几个关于今天状态的问题，获取专属运势分析</p>
+      <span class="tag">4 题 · 约 1 分钟</span>
+    </div>
+    <div class="quiz-card" data-quiz="brainstorm" onclick="startQuiz('brainstorm')">
+      <span class="emoji">🧠</span>
+      <h3>脑洞指数测评</h3>
+      <p>用 5 道奇葩情境题，测测你的创造力和想象力有多炸裂</p>
+      <span class="tag">5 题 · 约 2 分钟</span>
+    </div>
+  </div>
+
+  <!-- Quiz Flow -->
+  <div class="quiz-flow" id="quizFlow">
+    <button class="back-btn" onclick="backToHome()">← 返回</button>
+    <div id="quizContent"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ========== State ==========
+const apiKey = 'sk-xxx';
+const baseUrl = 'https://api.deepseek.com';
+let currentQuiz = null;
+let currentStep = 0;
+let questions = [];
+let answers = [];
+let userName = '';
+let userBirthday = '';
+
+// Init birth date selectors
+(function initBirthSelectors() {
+  const yearSel = document.getElementById('birthYear');
+  const monthSel = document.getElementById('birthMonth');
+  const daySel = document.getElementById('birthDay');
+
+  yearSel.innerHTML = '<option value="">年</option>';
+  for (let y = 2010; y >= 1950; y--) {
+    yearSel.innerHTML += `<option value="${y}">${y}</option>`;
+  }
+
+  monthSel.innerHTML = '<option value="">月</option>';
+  for (let m = 1; m <= 12; m++) {
+    monthSel.innerHTML += `<option value="${m}">${m}</option>`;
+  }
+
+  function updateDays() {
+    const y = parseInt(yearSel.value) || 2000;
+    const m = parseInt(monthSel.value) || 1;
+    const maxDay = new Date(y, m, 0).getDate();
+    const cur = daySel.value;
+    daySel.innerHTML = '<option value="">日</option>';
+    for (let d = 1; d <= maxDay; d++) {
+      const sel = parseInt(cur) === d ? ' selected' : '';
+      daySel.innerHTML += `<option value="${d}"${sel}>${d}</option>`;
+    }
+  }
+
+  yearSel.addEventListener('change', updateDays);
+  monthSel.addEventListener('change', updateDays);
+  updateDays();
+})();
+
+// ========== User Info ==========
+function confirmUserInfo() {
+  const nameInput = document.getElementById('userNameInput');
+  const yearSel = document.getElementById('birthYear');
+  const monthSel = document.getElementById('birthMonth');
+  const daySel = document.getElementById('birthDay');
+
+  const name = nameInput.value.trim();
+  if (!name) {
+    showToast('请输入你的姓名');
+    nameInput.focus();
+    return;
+  }
+  if (!yearSel.value || !monthSel.value || !daySel.value) {
+    showToast('请选择完整的出生日期');
+    return;
+  }
+
+  userName = name;
+  userBirthday = `${yearSel.value}年${monthSel.value}月${daySel.value}日`;
+
+  document.getElementById('userInfo').classList.add('hidden');
+  document.getElementById('quizGrid').classList.remove('hidden');
+  showToast(`你好，${userName}！请选择一个测试吧 ✓`);
+}
+
+// ========== Quiz Config ==========
+const QUIZZES = {
+  personality: {
+    title: '你的隐藏人格',
+    totalQuestions: 5,
+    color: 'personality',
+    systemPrompt: `你是一个专业而有趣的人格分析师。你需要通过5个情境问题来分析用户的隐藏人格。
+
+规则：
+1. 每次生成一个情境问题，提供4个选项（A/B/C/D）
+2. 问题要有趣、有深度，不要太直白
+3. 选项不要有明显的好坏之分，每个都合理
+4. 基于用户之前的回答来调整后续问题的方向
+
+请严格按以下JSON格式返回（不要返回其他内容）：
+{"question":"问题内容","options":["A. 选项1","B. 选项2","C. 选项3","D. 选项4"]}`,
+    resultPrompt: `根据以下5个问题和用户的回答，生成一份有趣的隐藏人格分析报告。
+
+要求：
+1. 给出一个有创意的人格标签（如"温柔的叛逆者"、"理性浪漫主义者"等）
+2. 用轻松有趣的语气分析
+3. 包含：核心性格特质、隐藏的一面、适合的解压方式
+4. 300字左右
+5. 严格按以下JSON格式返回：
+{"title":"人格标签","body":"分析内容"}`
+  },
+  fortune: {
+    title: '今日运势解读',
+    totalQuestions: 4,
+    color: 'fortune',
+    systemPrompt: `你是一个风趣的运势解读师，风格介于星座博主和脱口秀之间。你需要通过4个关于今天状态的问题来生成运势。
+
+规则：
+1. 问题围绕用户今天的感受、遇到的事、心情等
+2. 提供4个选项
+3. 语气轻松有趣
+
+请严格按以下JSON格式返回（不要返回其他内容）：
+{"question":"问题内容","options":["A. 选项1","B. 选项2","C. 选项3","D. 选项4"]}`,
+    resultPrompt: `根据以下问题和用户的回答，生成一份今日运势解读。
+
+要求：
+1. 给出一个有趣的运势标题（如"锦鲤附体日"、"适合躺平的一天"等）
+2. 包含：整体运势、事业/学业、感情、幸运颜色和数字
+3. 语气有趣不无聊，像朋友聊天
+4. 250字左右
+5. 严格按以下JSON格式返回：
+{"title":"运势标题","body":"运势内容"}`
+  },
+  brainstorm: {
+    title: '脑洞指数测评',
+    totalQuestions: 5,
+    color: 'brainstorm',
+    systemPrompt: `你是一个脑洞测试出题官。你需要出5道奇葩但有趣的情境题来测试用户的想象力和创造力。
+
+规则：
+1. 问题要天马行空但有趣，比如"如果你醒来发现自己变成了一只猫"
+2. 4个选项要有明显的脑洞差异，从保守到疯狂
+3. 不要太幼稚，要有成年人的幽默感
+
+请严格按以下JSON格式返回（不要返回其他内容）：
+{"question":"问题内容","options":["A. 选项1","B. 选项2","C. 选项3","D. 选项4"]}`,
+    resultPrompt: `根据以下问题和用户的回答，生成一份脑洞指数测评报告。
+
+要求：
+1. 给出一个脑洞指数（如 "脑洞指数: 87/100 — 平行宇宙旅行者"）
+2. 分析用户的想象力类型和创造力风格
+3. 给出一个有趣的"脑洞等级"称号
+4. 语气幽默犀利
+5. 300字左右
+6. 严格按以下JSON格式返回：
+{"title":"脑洞等级称号","body":"测评内容"}`
+  }
+};
+
+// ========== API Call ==========
+async function callDeepSeek(messages) {
+  const res = await fetch(`${baseUrl}/v1/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: 'deepseek-chat',
+      messages,
+      temperature: 0.9,
+      max_tokens: 1000
+    })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || `API 请求失败 (${res.status})`);
+  }
+  const data = await res.json();
+  return data.choices[0].message.content;
+}
+
+function parseJSON(text) {
+  // Try to extract JSON from response
+  const match = text.match(/\{[\s\S]*\}/);
+  if (match) {
+    return JSON.parse(match[0]);
+  }
+  throw new Error('无法解析 AI 返回的内容');
+}
+
+// ========== Quiz Logic ==========
+async function startQuiz(type) {
+  currentQuiz = type;
+  currentStep = 0;
+  questions = [];
+  answers = [];
+
+  document.getElementById('quizGrid').classList.add('hidden');
+  document.getElementById('quizFlow').classList.add('active');
+
+  await loadQuestion();
+}
+
+async function loadQuestion() {
+  const quiz = QUIZZES[currentQuiz];
+  const content = document.getElementById('quizContent');
+
+  // Loading
+  content.innerHTML = `
+    <div class="quiz-title">${quiz.title}</div>
+    <div class="quiz-progress">第 ${currentStep + 1} / ${quiz.totalQuestions} 题</div>
+    <div class="progress-bar"><div class="progress-fill ${quiz.color}" style="width:${(currentStep / quiz.totalQuestions) * 100}%"></div></div>
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>AI 正在出题...</p>
+    </div>
+  `;
+
+  try {
+    // Build message history
+    const userContext = `用户信息：姓名：${userName}，出生日期：${userBirthday}。请在出题时适当融入用户的个人信息，让题目更有针对性和亲切感。`;
+    const messages = [{ role: 'system', content: userContext + '\n\n' + quiz.systemPrompt }];
+
+    if (questions.length > 0) {
+      // Add previous Q&A context
+      let context = '之前的问答记录：\n';
+      questions.forEach((q, i) => {
+        context += `第${i+1}题：${q.question}\n用户选择：${answers[i]}\n\n`;
+      });
+      context += `请生成第${currentStep + 1}题。`;
+      messages.push({ role: 'user', content: context });
+    } else {
+      messages.push({ role: 'user', content: '请生成第1题。' });
+    }
+
+    const response = await callDeepSeek(messages);
+    const data = parseJSON(response);
+
+    questions.push(data);
+    renderQuestion(data);
+  } catch (err) {
+    content.innerHTML = `
+      <div class="quiz-title">${quiz.title}</div>
+      <div class="error-msg">出题失败：${err.message}</div>
+      <button class="option-btn" onclick="loadQuestion()">重试</button>
+    `;
+  }
+}
+
+function renderQuestion(data) {
+  const quiz = QUIZZES[currentQuiz];
+  const content = document.getElementById('quizContent');
+
+  content.innerHTML = `
+    <div class="quiz-title">${quiz.title}</div>
+    <div class="quiz-progress">第 ${currentStep + 1} / ${quiz.totalQuestions} 题</div>
+    <div class="progress-bar"><div class="progress-fill ${quiz.color}" style="width:${((currentStep + 1) / quiz.totalQuestions) * 100}%"></div></div>
+    <div class="question-text">${data.question}</div>
+    <div class="options">
+      ${data.options.map((opt, i) =>
+        `<button class="option-btn" onclick="selectAnswer(${i})">${opt}</button>`
+      ).join('')}
+    </div>
+  `;
+}
+
+async function selectAnswer(index) {
+  const quiz = QUIZZES[currentQuiz];
+  answers.push(questions[currentStep].options[index]);
+  currentStep++;
+
+  if (currentStep >= quiz.totalQuestions) {
+    await generateResult();
+  } else {
+    await loadQuestion();
+  }
+}
+
+async function generateResult() {
+  const quiz = QUIZZES[currentQuiz];
+  const content = document.getElementById('quizContent');
+
+  const loadingTexts = [
+    'AI 正在深度分析你的回答...',
+    '正在生成专属报告...',
+    '即将揭晓结果...'
+  ];
+  let loadIdx = 0;
+
+  content.innerHTML = `
+    <div class="quiz-title">${quiz.title}</div>
+    <div class="progress-bar"><div class="progress-fill ${quiz.color}" style="width:100%"></div></div>
+    <div class="loading">
+      <div class="spinner"></div>
+      <p id="loadingText">${loadingTexts[0]}</p>
+      <p class="loading-sub">通常需要 5-10 秒</p>
+    </div>
+  `;
+
+  const loadingTimer = setInterval(() => {
+    loadIdx = (loadIdx + 1) % loadingTexts.length;
+    const el = document.getElementById('loadingText');
+    if (el) el.textContent = loadingTexts[loadIdx];
+  }, 2500);
+
+  try {
+    let qaRecord = '';
+    questions.forEach((q, i) => {
+      qaRecord += `第${i+1}题：${q.question}\n用户选择：${answers[i]}\n\n`;
+    });
+
+    const userContext = `用户信息：姓名：${userName}，出生日期：${userBirthday}。请在生成结果时称呼用户的名字，并结合出生日期给出更个性化的分析。`;
+    const messages = [
+      { role: 'system', content: userContext + '\n\n' + quiz.resultPrompt },
+      { role: 'user', content: qaRecord }
+    ];
+
+    const response = await callDeepSeek(messages);
+    const data = parseJSON(response);
+    clearInterval(loadingTimer);
+    renderResult(data);
+  } catch (err) {
+    clearInterval(loadingTimer);
+    content.innerHTML = `
+      <div class="quiz-title">${quiz.title}</div>
+      <div class="error-msg">生成结果失败：${err.message}</div>
+      <button class="option-btn" onclick="generateResult()">重试</button>
+    `;
+  }
+}
+
+function renderResult(data) {
+  const quiz = QUIZZES[currentQuiz];
+  const content = document.getElementById('quizContent');
+
+  content.innerHTML = `
+    <div class="result-card ${quiz.color}">
+      <div style="font-size:14px;color:var(--text-dim);margin-bottom:12px;">👤 ${userName} 的测试结果</div>
+      <div class="result-label">${quiz.title} · 测试结果</div>
+      <div class="result-title">${data.title}</div>
+      <div class="result-body">${data.body}</div>
+      <div class="result-actions">
+        <button class="btn-retry" onclick="startQuiz('${currentQuiz}')">再测一次</button>
+        <button class="btn-share" onclick="shareResult()">复制结果</button>
+      </div>
+    </div>
+  `;
+}
+
+// ========== Navigation ==========
+function backToHome() {
+  document.getElementById('quizFlow').classList.remove('active');
+  document.getElementById('quizGrid').classList.remove('hidden');
+  document.getElementById('userInfo').classList.remove('hidden');
+  currentQuiz = null;
+}
+
+// ========== Share ==========
+function shareResult() {
+  const title = document.querySelector('.result-title')?.textContent || '';
+  const body = document.querySelector('.result-body')?.textContent || '';
+  const quiz = QUIZZES[currentQuiz];
+  const text = `【${quiz.title}】\n${userName} 的结果：${title}\n\n${body}\n\n—— 来自趣味测试乐园`;
+
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('已复制到剪贴板，去分享吧！');
+  }).catch(() => {
+    showToast('复制失败，请手动复制');
+  });
+}
+
+// ========== Toast ==========
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2200);
+}
+</script>
+
+</body>
+</html>

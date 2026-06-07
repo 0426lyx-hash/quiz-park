@@ -144,8 +144,7 @@ body::after {
   margin-bottom: 16px;
   font-weight: 500;
 }
-.user-info input[type="text"],
-.user-info input[type="password"] {
+.user-info input[type="text"] {
   width: 100%;
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -158,8 +157,7 @@ body::after {
   transition: all 0.3s;
   margin-bottom: 14px;
 }
-.user-info input[type="text"]:focus,
-.user-info input[type="password"]:focus {
+.user-info input[type="text"]:focus {
   border-color: var(--neon-purple);
   box-shadow: 0 0 0 3px rgba(179,71,234,0.1), inset 0 0 10px rgba(179,71,234,0.05);
 }
@@ -699,8 +697,6 @@ body::after {
       <select id="birthMonth"></select>
       <select id="birthDay"></select>
     </div>
-    <label style="font-size:12px;color:var(--text-dim);margin-bottom:6px;display:block;letter-spacing:0.5px;">NanoGPT API Key</label>
-    <input type="password" id="apiKeyInput" placeholder="输入你的 NanoGPT API Key">
     <button class="start-btn" onclick="confirmUserInfo()">✦ 开始测试</button>
   </div>
 
@@ -819,27 +815,12 @@ body::after {
 })();
 
 // ========== State ==========
-function getApiKey() {
-  return localStorage.getItem('quiz_park_api_key') || '';
-}
-function setApiKey(key) {
-  localStorage.setItem('quiz_park_api_key', key);
-}
-const baseUrl = 'https://nano-gpt.com/api/v1';
 let currentQuiz = null;
 let currentStep = 0;
 let questions = [];
 let answers = [];
 let userName = '';
 let userBirthday = '';
-
-// Init API key input
-(function initApiKey() {
-  const input = document.getElementById('apiKeyInput');
-  const saved = getApiKey();
-  if (saved) input.value = saved;
-  input.addEventListener('input', () => setApiKey(input.value.trim()));
-})();
 
 // Init birth date selectors
 (function initBirthSelectors() {
@@ -880,7 +861,6 @@ function confirmUserInfo() {
   const yearSel = document.getElementById('birthYear');
   const monthSel = document.getElementById('birthMonth');
   const daySel = document.getElementById('birthDay');
-  const apiKeyInput = document.getElementById('apiKeyInput');
 
   const name = nameInput.value.trim();
   if (!name) {
@@ -892,13 +872,6 @@ function confirmUserInfo() {
     showToast('请选择完整的出生日期');
     return;
   }
-  const apiKey = apiKeyInput.value.trim();
-  if (!apiKey) {
-    showToast('请输入你的 NanoGPT API Key');
-    apiKeyInput.focus();
-    return;
-  }
-  setApiKey(apiKey);
 
   userName = name;
   userBirthday = `${yearSel.value}年${monthSel.value}月${daySel.value}日`;
@@ -989,11 +962,10 @@ const QUIZZES = {
 
 // ========== API Call ==========
 async function callAI(messages) {
-  const res = await fetch(`${baseUrl}/chat/completions`, {
+  const res = await fetch('/api/chat', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${getApiKey()}`
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify({
       model: 'google/gemini-3.5-flash',

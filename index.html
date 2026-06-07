@@ -144,7 +144,8 @@ body::after {
   margin-bottom: 16px;
   font-weight: 500;
 }
-.user-info input[type="text"] {
+.user-info input[type="text"],
+.user-info input[type="password"] {
   width: 100%;
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -157,7 +158,8 @@ body::after {
   transition: all 0.3s;
   margin-bottom: 14px;
 }
-.user-info input[type="text"]:focus {
+.user-info input[type="text"]:focus,
+.user-info input[type="password"]:focus {
   border-color: var(--neon-purple);
   box-shadow: 0 0 0 3px rgba(179,71,234,0.1), inset 0 0 10px rgba(179,71,234,0.05);
 }
@@ -216,52 +218,6 @@ body::after {
 }
 .user-info .start-btn:active { transform: scale(0.98); }
 .user-info.hidden { display: none; }
-
-/* === Api key row === */
-.api-key-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 14px;
-  position: relative;
-}
-.api-key-row .key-toggle {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 8px;
-  color: var(--text-dim);
-  width: 36px;
-  height: 36px;
-  cursor: pointer;
-  font-size: 16px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s;
-}
-.api-key-row .key-toggle:hover {
-  color: var(--neon-cyan);
-  border-color: var(--neon-cyan);
-  box-shadow: 0 0 10px rgba(0,240,255,0.2);
-}
-.api-key-row input {
-  flex: 1;
-  margin-bottom: 0 !important;
-  padding-right: 36px !important;
-}
-.api-key-row .key-visibility {
-  position: absolute;
-  right: 48px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-dim);
-  cursor: pointer;
-  font-size: 14px;
-  padding: 4px;
-  transition: color 0.2s;
-}
-.api-key-row .key-visibility:hover { color: var(--text); }
 
 /* === Quiz Grid === */
 .quiz-grid {
@@ -743,13 +699,8 @@ body::after {
       <select id="birthMonth"></select>
       <select id="birthDay"></select>
     </div>
-    <div class="api-key-row" id="apiKeyRow" style="display:none;">
-      <button class="key-toggle" onclick="toggleApiKey()" title="API 设置">⚙️</button>
-      <input type="password" id="apiKeyInput" placeholder="sk-nano-0c192f5e-e74f-4589-905f-bc5e2f235811">
-    </div>
-    <div style="text-align:right;margin-bottom:12px;">
-      <button style="background:none;border:none;color:var(--text-dim);font-size:11px;cursor:pointer;font-family:inherit;letter-spacing:0.5px;" onclick="toggleApiKey()">⚙️ API 设置</button>
-    </div>
+    <label style="font-size:12px;color:var(--text-dim);margin-bottom:6px;display:block;letter-spacing:0.5px;">NanoGPT API Key</label>
+    <input type="password" id="apiKeyInput" placeholder="输入你的 NanoGPT API Key">
     <button class="start-btn" onclick="confirmUserInfo()">✦ 开始测试</button>
   </div>
 
@@ -869,7 +820,7 @@ body::after {
 
 // ========== State ==========
 function getApiKey() {
-  return localStorage.getItem('quiz_park_api_key') || 'sk-nano-0c192f5e-e74f-4589-905f-bc5e2f235811';
+  return localStorage.getItem('quiz_park_api_key') || '';
 }
 function setApiKey(key) {
   localStorage.setItem('quiz_park_api_key', key);
@@ -885,21 +836,10 @@ let userBirthday = '';
 // Init API key input
 (function initApiKey() {
   const input = document.getElementById('apiKeyInput');
-  input.value = getApiKey();
-  input.addEventListener('change', () => setApiKey(input.value.trim()));
+  const saved = getApiKey();
+  if (saved) input.value = saved;
   input.addEventListener('input', () => setApiKey(input.value.trim()));
 })();
-
-function toggleApiKey() {
-  const row = document.getElementById('apiKeyRow');
-  const input = document.getElementById('apiKeyInput');
-  if (row.style.display === 'none') {
-    row.style.display = 'flex';
-    input.focus();
-  } else {
-    row.style.display = 'none';
-  }
-}
 
 // Init birth date selectors
 (function initBirthSelectors() {
@@ -940,6 +880,7 @@ function confirmUserInfo() {
   const yearSel = document.getElementById('birthYear');
   const monthSel = document.getElementById('birthMonth');
   const daySel = document.getElementById('birthDay');
+  const apiKeyInput = document.getElementById('apiKeyInput');
 
   const name = nameInput.value.trim();
   if (!name) {
@@ -951,6 +892,13 @@ function confirmUserInfo() {
     showToast('请选择完整的出生日期');
     return;
   }
+  const apiKey = apiKeyInput.value.trim();
+  if (!apiKey) {
+    showToast('请输入你的 NanoGPT API Key');
+    apiKeyInput.focus();
+    return;
+  }
+  setApiKey(apiKey);
 
   userName = name;
   userBirthday = `${yearSel.value}年${monthSel.value}月${daySel.value}日`;
